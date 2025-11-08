@@ -1,135 +1,216 @@
-# Turborepo starter
+# 🤖 Real Estate AI Agent Platform
 
-This Turborepo starter is maintained by the Turborepo core team.
+A comprehensive monorepo for an AI-powered real estate platform that handles property searches, customer calls, and data management.
 
-## Using this example
+---
 
-Run the following command:
+## 📋 Overview
 
-```sh
-npx create-turbo@latest
+This project is a **monorepo** managed by [Turborepo](https://turbo.build/repo), containing multiple interconnected services that work together to provide an intelligent real estate agent experience.
+
+### Architecture
+
+The platform consists of three main applications:
+
+- **Dashboard** (Veronica's domain) - A Next.js frontend for users to interact with the system
+- **Calling Agent** (Keshav & Monish's domain) - A Node.js/Express service that integrates with Retell AI for voice calls
+- **Searching Agent** (Justin's domain) - A Python/FastAPI service that searches properties using NVIDIA Nemotron and Zillow
+
+### Technology Stack
+
+| Component | Technology |
+|-----------|-----------|
+| **Monorepo Manager** | Turborepo |
+| **Frontend** | Next.js, React, TypeScript, Tailwind CSS |
+| **Calling Service** | Node.js, Express, TypeScript, Retell AI SDK |
+| **Search Service** | Python, FastAPI, NVIDIA Nemotron |
+| **Database** | PostgreSQL |
+| **ORM** | Prisma (shared package) |
+
+---
+
+## 🏁 Getting Started
+
+### Prerequisites
+
+Before beginning, ensure you have these installed:
+
+- **Node.js** (v18.x or v20.x recommended)
+- **npm** (v10.x or later)
+- **Python** (v3.10 or later)
+- **PostgreSQL** database (running instance)
+
+---
+
+## 🔧 Initial Setup
+
+These steps only need to be completed once.
+
+### Step 1: Clone the Repository
+```bash
+git clone <your-repo-url>
+cd real-estate-ai
 ```
 
-## What's inside?
+### Step 2: Install Node.js Dependencies
 
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+This installs all npm packages for every app and package in the monorepo:
+```bash
+npm install
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+### Step 3: Set Up Python Environment
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
+Configure the Python virtual environment for the searching agent:
+```bash
+# Navigate to the search agent directory
+cd apps/searching-agent
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
+# Create a Python virtual environment
+python3 -m venv .venv
 
-### Develop
+# Activate the virtual environment
+source .venv/bin/activate
+# On Windows: .\.venv\Scripts\activate
 
-To develop all apps and packages, run the following command:
+# Install Python packages
+pip install fastapi uvicorn httpx
 
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+# Return to project root
+cd ../..
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+### Step 4: Configure Environment Variables
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
+Create `.env` files to store sensitive configuration. **These files are never committed to Git.**
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
+#### Root `.env` File
 
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+Create a `.env` file in the project root for the database connection:
+```bash
+touch .env
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+Add your PostgreSQL connection string:
+```env
+# /.env
+DATABASE_URL="postgresql://YOUR_USER:YOUR_PASSWORD@YOUR_HOST:5432/YOUR_DB_NAME"
 ```
 
-## Useful Links
+#### Service-Specific `.env` Files
 
-Learn more about the power of Turborepo:
+Create additional environment files for each service:
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+- `apps/dashboard/.env.local` - Next.js configuration and API keys
+- `apps/calling-agent/.env` - Retell AI API keys
+- `apps/searching-agent/.env` - NVIDIA Nemotron keys, Zillow API keys
+
+### Step 5: Initialize the Database
+
+Run Prisma migrations to create all database tables:
+```bash
+npx prisma migrate dev --schema=./packages/db/prisma/schema.prisma
+```
+
+This command will:
+1. Read the schema from `packages/db/prisma/schema.prisma`
+2. Connect to your PostgreSQL database
+3. Create all tables (Customer, CallLog, Property, etc.)
+
+---
+
+## 🚀 Running the Application
+
+You'll need **two separate terminal windows** running simultaneously.
+
+### Terminal 1: Node.js Services
+
+Start all Node.js applications in development mode:
+```bash
+# From project root
+npm run dev
+```
+
+This starts:
+- **Dashboard** at `http://localhost:3000`
+- **Calling Agent** at `http://localhost:3001` (or your configured port)
+
+### Terminal 2: Python Search Service
+
+Start the FastAPI search service:
+```bash
+# Navigate to the search agent
+cd apps/searching-agent
+
+# Activate virtual environment
+source .venv/bin/activate
+
+# Start FastAPI server
+uvicorn main:app --reload
+```
+
+The search service runs at `http://localhost:8000` (default FastAPI port)
+
+---
+
+## 👥 Team Responsibilities
+
+### 👩‍🎨 Veronica - Frontend Development
+
+**Your Application:** `apps/dashboard`
+
+**Tech Stack:** Next.js, React, Tailwind CSS
+
+**Responsibilities:**
+- Build the user-facing dashboard interface
+- Create reusable UI components in `packages/ui`
+- Implement API routes in `apps/dashboard/src/app/api`
+- Use Prisma client from `packages/db` for database operations
+- Import shared types from `packages/types`
+
+### 📞 Keshav & Monish - Calling Agent
+
+**Your Application:** `apps/calling-agent`
+
+**Tech Stack:** Node.js, Express, Retell AI SDK
+
+**Responsibilities:**
+- Create webhook endpoints for Retell AI integration
+- Handle live call logic and conversation flow
+- Save call logs and transcripts to the database
+- Manage customer information during calls
+- Use Prisma client from `packages/db`
+- Import shared types from `packages/types`
+
+### 🔍 Justin - Search Agent
+
+**Your Application:** `apps/searching-agent`
+
+**Tech Stack:** Python, FastAPI
+
+**Responsibilities:**
+- Create API endpoints (e.g., `/start-search`)
+- Integrate with NVIDIA Nemotron for AI-powered search
+- Connect to Zillow API for property data
+- Process and save search results to the database
+- Coordinate with team on database access strategy (prisma-client-py vs. BFF)
+
+---
+
+## 📦 Shared Packages
+
+The monorepo includes shared packages that all services can use:
+
+- **`packages/db`** - Prisma client and database schema
+- **`packages/ui`** - Shared React components
+- **`packages/types`** - TypeScript type definitions shared across services
+
+---
+
+## 💡 Development Tips
+
+- The monorepo structure allows code sharing while keeping services independent
+- Turborepo handles building and caching for optimal performance
+- Always run Prisma commands from the project root
+- Keep environment variables secure and never commit `.env` files
+- Coordinate database schema changes with the entire team
