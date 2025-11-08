@@ -49,7 +49,7 @@ These steps only need to be completed once.
 ### Step 1: Clone the Repository
 ```bash
 git clone <your-repo-url>
-cd real-estate-ai
+cd hackutd25
 ```
 
 ### Step 2: Install Node.js Dependencies
