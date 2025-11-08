@@ -1,15 +1,56 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// packages/db/prisma/schema.prisma
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
-}
-
+// 1. Define your database provider
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL") // This loads from the .env file
+}
+
+// 2. Define your generator (this is what `npm install` uses)
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 3. Define the Python generator (this is for your app)
+generator pyclient {
+  provider = "prisma-client-py"
+  output   = "../../../apps/searching-agent/.venv/lib/python3.13/site-packages/prisma" // Adjust path as needed
+}
+
+
+// --- YOUR DATABASE MODELS ---
+
+// Model for customers from the Retell AI calls
+model Customer {
+  id        String   @id @default(cuid())
+  phone     String?  @unique
+  email     String?  @unique
+  name      String?
+  createdAt DateTime @default(now())
+
+  // Relation: One customer can have many call logs
+  callLogs CallLog[]
+}
+
+// Model for the call logs (from Keshav & Monish's app)
+model CallLog {
+  id         String   @id @default(cuid())
+  transcript String
+  duration   Int // in seconds
+  createdAt  DateTime @default(now())
+
+  // Relation: Each log belongs to one customer
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+}
+
+// Model for the properties (from your searching-agent)
+model Property {
+  id        String   @id @default(cuid())
+  address   String
+  price     Float
+  beds      Int?
+  baths     Int?
+  source    String   // e.g., "NemotronSearch", "Zillow"
+  foundAt   DateTime @default(now())
 }
