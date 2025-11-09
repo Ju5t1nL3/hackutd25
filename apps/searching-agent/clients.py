@@ -1,8 +1,6 @@
 import json
 import os
-
 import httpx
-
 from . import property_data, schemas
 
 # --- Load API Keys ---
@@ -17,12 +15,60 @@ def _get_property_database():
     # This now looks like it's loading a real data module
     return property_data.HOUSES
 
-
-async def score_properties(criteria: schemas.GraphRequest):
+async def extract_criteria_from_notes(notes: str) -> dict:
     """
-    Scores all properties in the database against the given criteria.
-    - It does NOT filter, it annotates.
-    - It returns the FULL list of properties, each with a new 'score' dict.
+    NEW: Uses Nemotron to parse unstructured notes into structured JSON.
+    """
+    print(f"--- 🤖 CLIENT: Parsing notes with Nemotron: {notes} ---")
+    if not NVIDIA_API_KEY:
+        print("--- ⚠️ NVIDIA_API_KEY not set. Using default criteria. ---")
+        return {"location": "Richardson", "max_price": 500000, "min_beds": 3, "min_baths": 2}
+
+    # 1. Define the output tool (our JSON schema)
+    output_tool = {
+        "type": "function",
+        "function": {
+            "name": "submit_criteria",
+            "description": "Submit the extracted property criteria.",
+            "parameters": schemas.PropertyCriteria.model_json_schema() # Generate schema from Pydantic
+        }
+    }
+
+    system_prompt = "You are an expert at extracting structured data from unstructured text. The user will provide notes from a call. Extract the property criteria by calling the `submit_criteria` tool."
+    user_prompt = f"Here are the call notes: {notes}"
+
+    headers = {"Authorization": f"Bearer {NVIDIA_API_KEY}"}
+    payload = {
+        "model": "nvidia/nvidia-nemotron-nano-9b-v2",
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        "tools": [output_tool],
+        "tool_choice": {"type": "function", "function": {"name": "submit_criteria"}}
+    }
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(NVIDIA_API_URL, headers=headers, json=payload, timeout=30)
+            response.raise_for_status()
+            
+        message = response.json()['choices'][0]['message']
+        if message.get("tool_calls"):
+            args_str = message['tool_calls'][0]['function']['arguments']
+            print(f"--- 🤖 CLIENT: Extracted criteria: {args_str} ---")
+            return json.loads(args_str)
+        else:
+            raise ValueError("Nemotron did not call the `submit_criteria` tool.")
+
+    except Exception as e:
+        print(f"--- ❌ NEMOTRON PARSE ERROR: {e} ---")
+        # Fallback for the demo
+        return {"location": "Richardson", "max_price": 500000, "min_beds": 3, "min_baths": 2}
+
+async def score_properties(criteria: schemas.PropertyCriteria): # <-- Use new schema
+    """
+    Scores all properties against the extracted criteria.
     """
     print("--- 🛠️ CLIENT: Scoring all properties... ---")
     all_houses = _get_property_database()
@@ -30,31 +76,24 @@ async def score_properties(criteria: schemas.GraphRequest):
 
     for house in all_houses:
         score_details = {}
-        score_details["isLocationMatch"] = (
-            house["location"].lower() == criteria.location.lower()
-        )
-        score_details["isPriceMatch"] = (
-            criteria.max_price is None or house["price"] <= criteria.max_price
-        )
-        score_details["isBedsMatch"] = (
-            criteria.min_beds is None or house["beds"] >= criteria.min_beds
-        )
-
-        # Calculate the total score
-        score_details["matchScore"] = sum(
-            [
-                score_details["isLocationMatch"],
-                score_details["isPriceMatch"],
-                score_details["isBedsMatch"],
-            ]
-        )
-
-        # Add the score to the house object
-        house_with_score = house.copy()  # Avoid modifying the original list
+        score_details["isLocationMatch"] = house["location"].lower() == criteria.location.lower()
+        score_details["isPriceMatch"] = criteria.max_price is None or house["price"] <= criteria.max_price
+        score_details["isBedsMatch"] = criteria.min_beds is None or house["beds"] >= criteria.min_beds
+        score_details["isBathsMatch"] = criteria.min_baths is None or house["baths"] >= criteria.min_baths # <-- ADDED BATHS
+        
+        # Calculate the total score (now out of 4)
+        score_details["matchScore"] = sum([
+            score_details["isLocationMatch"],
+            score_details["isPriceMatch"],
+            score_details["isBedsMatch"],
+            score_details["isBathsMatch"] # <-- ADDED BATHS
+        ])
+        
+        house_with_score = house.copy()
         house_with_score["score"] = score_details
         scored_houses.append(house_with_score)
 
-    print("--- 🛠️ CLIENT: Scoring complete. ---")
+    print(f"--- 🛠️ CLIENT: Scoring complete. ---")
     return scored_houses
 
 
@@ -156,7 +195,7 @@ async def get_ai_analysis(scored_matches: list, criteria: schemas.GraphRequest):
 
 
 def build_graph_json(
-    all_scored_houses: list, best_match_id: str, criteria: schemas.GraphRequest
+    all_scored_houses: list, best_match_id: str, criteria: schemas.PropertyCriteria
 ):
     """
     Builds the graph JSON from the FULL list of scored houses.
@@ -164,12 +203,13 @@ def build_graph_json(
     - Only creates edges for properties with a score > 0.
     """
     print("--- 🛠️ CLIENT: Building full graph JSON... ---")
+    criteria_str = f"Search: {criteria.location}, <${criteria.max_price}, {criteria.min_beds}+ beds, {criteria.min_baths}+ baths"
 
     # Center node
     nodes = [
         {
             "id": "search_criteria",
-            "label": f"Search: {criteria.location}, <${criteria.max_price}, {criteria.min_beds}+ beds",
+            "label": criteria_str,
             "type": "search",  # Added a type for the frontend
         }
     ]

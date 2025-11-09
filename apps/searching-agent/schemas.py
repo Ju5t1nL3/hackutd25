@@ -13,7 +13,14 @@ class SearchRequest(BaseModel):
 class GraphRequest(BaseModel):
     """The request model for the /generate-graph endpoint"""
 
+    callLogNotes: str
+    # Add any other criteria from the call log
+
+
+class PropertyCriteria(BaseModel):
+    """The structured data extracted from notes"""
+
     location: str
     max_price: float | None = None
     min_beds: int | None = None
-    # Add any other criteria from the call log
+    min_baths: int | None = None  # <-- We'll add baths here
