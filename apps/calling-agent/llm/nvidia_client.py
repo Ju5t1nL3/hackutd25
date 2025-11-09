@@ -1,25 +1,16 @@
 import httpx
 import config
 from typing import List, Dict, Any, Optional
+import json
 
-# --- Shared Asynchronous HTTP Client ---
-# We create a single, reusable client instance for all requests.
-# This is much more efficient than creating a new one for every call.
-# It's configured with the necessary auth headers and a reasonable timeout.
-
-# Prepare the headers for our NVIDIA API
+# --- NVIDIA API Configuration ---
+# We still define the headers and model name globally
 headers = {
     "Authorization": f"Bearer {config.NVIDIA_API_KEY}",
     "Accept": "application/json",
     "Content-Type": "application/json",
 }
-
-# Define the specific model we are using
 NVIDIA_MODEL_NAME = "nvidia/llama-3.1-nemotron-nano-8b-v1"
-
-# Initialize the async client
-# We set a 30-second timeout for all operations (connect, read, write)
-client = httpx.AsyncClient(headers=headers, timeout=30.0)
 
 
 async def get_llm_response(
@@ -29,82 +20,78 @@ async def get_llm_response(
 ) -> str:
     """
     Calls the NVIDIA NIM API to get a chat completion.
-
-    Args:
-        system_prompt: The "system" role prompt (e.g., from agents.py).
-        user_prompt: The "user" role prompt (the latest user transcript).
-        history: (Optional) A list of previous turns, e.g., 
-                 [{"user": "...", "agent": "..."}, ...]
-
-    Returns:
-        A string containing the model's text response.
-        
-    Raises:
-        httpx.HTTPStatusError: If the API returns a non-200 status.
-        Exception: For general processing errors (e.g., JSON parsing).
+    A new client is created for every call to prevent connection issues.
     """
 
-    # 1. Construct the 'messages' payload
-    messages = [
-        {"role": "system", "content": "/no_think"},
-        {"role": "system", "content": system_prompt}
-    ]
+    # This removes the invisible "non-breaking space" characters.
+    system_prompt = system_prompt.replace("\xa0", " ")
 
-    # 2. Add history, if it exists
+    # 1. Construct the 'messages' payload
+    messages = [{"role": "system", "content": system_prompt}]
     if history:
         for turn in history:
             messages.append({"role": "user", "content": turn.get("user", "")})
             messages.append({"role": "assistant", "content": turn.get("agent", "")})
-
-    # 3. Add the latest user prompt
     messages.append({"role": "user", "content": user_prompt})
     
     # 4. Define the full request body
-    # We are forcing the LLM to output JSON by using `response_format`.
-    # This is a standard OpenAI-compatible feature that Nemotron supports.
     payload = {
         "model": NVIDIA_MODEL_NAME,
         "messages": messages,
-        "temperature": 0.2,  # Low temp for more predictable JSON output
+        "temperature": 0.2,
         "top_p": 0.7,
-        "max_tokens": 1024,
-        "response_format": {"type": "json_object"} # Force JSON output!
+        "max_tokens": 2048,
+        "response_format": {"type": "json_object"}
     }
 
+    # --- NEW CLIENT LOGIC ---
+    # We create a fresh client *inside* the function.
+    # This is less efficient but much more robust for debugging.
     try:
-        # 5. Make the asynchronous API call
-        response = await client.post(config.NVIDIA_NIM_URL, json=payload)
+        async with httpx.AsyncClient(headers=headers, timeout=120.0) as client:
+            
+            print(f"--- DEBUG: Calling NVIDIA with payload: {payload}")
+            response = await client.post(config.NVIDIA_NIM_URL, json=payload)
+            response.raise_for_status()
 
-        # 6. Check for errors
-        # This will raise an exception if the status is 4xx or 5xx
-        response.raise_for_status()
+            data = response.json()
+            print(f"--- DEBUG: Full API response: {data}")
 
-        # 7. Parse the successful response
-        data = response.json()
-        
-        # 8. Extract the text content from the response
-        # The typical OpenAI format is data['choices'][0]['message']['content']
-        content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-        
-        if not content:
-            print("Warning: LLM response was empty or in an unexpected format.")
-            print(f"Full API response: {data}")
-        
-        return content
+            choices = data.get("choices")
+            if not choices:
+                print("Error: LLM response had no 'choices' list.")
+                raise Exception("LLM response was valid but empty.")
+
+            message = choices[0].get("message")
+            if not message:
+                print("Error: First choice had no 'message' object.")
+                raise Exception("LLM response choice was empty.")
+
+            content = message.get("content")
+            if content is None:
+                print("Error: Message object had no 'content'.")
+                raise Exception("LLM message content was missing.")
+            
+            return content
 
     except httpx.HTTPStatusError as e:
         print(f"HTTP error occurred: {e.request.url} - {e.response.status_code}")
         print(f"Response body: {e.response.text}")
-        raise  # Re-raise the exception to be handled by main.py
+        raise
+    except json.JSONDecodeError as e:
+        print(f"Failed to decode JSON from API response.")
+        print(f"Response text: {response.text}")
+        raise
+    except httpx.ReadTimeout as e:
+        print(f"ReadTimeout occurred. The server took too long to respond.")
+        raise
     except Exception as e:
-        print(f"An error occurred in get_llm_response: {e}")
+        print(f"An unexpected error occurred in get_llm_response: {type(e).__name__}: {e}")
         raise
 
-# --- Function to gracefully shut down the client ---
-# We'll call this from main.py when the server stops
 async def close_llm_client():
     """
-    Closes the shared httpx.AsyncClient.
+    Does nothing now, as we are not using a global client.
     """
-    print("Closing NVIDIA LLM client...")
-    await client.aclose()
+    print("No global LLM client to close.")
+    pass
