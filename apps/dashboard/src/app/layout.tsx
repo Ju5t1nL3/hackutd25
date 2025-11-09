@@ -2,6 +2,7 @@
 
 import React from "react";
 import Sidebar from "@/components/Sidebar"; // Use alias for clean import
+import { Providers } from "@/components/providers";
 import "../index.css"; // Import global styles from src/index.css
 
 // Metadata is optional but good practice in Next.js
@@ -25,22 +26,24 @@ export default function RootLayout({
         The content within the body matches the structure previously in App.tsx.
       */}
       <body>
-        <div className="flex h-screen w-full bg-white">
-          {/* 1. Persistent UI: Sidebar */}
-          <Sidebar />
+        <Providers>
+          <div className="flex h-screen w-full bg-white">
+            {/* 1. Persistent UI: Sidebar */}
+            <Sidebar />
 
-          {/* 2. Main Content Area - Full height, no padding */}
-          <main className="flex-1 overflow-hidden ml-64 h-screen">
-            {/* Page Content: {children} is where Next.js injects the 
+            {/* 2. Main Content Area - Full height, no padding */}
+            <main className="flex-1 overflow-hidden ml-64 h-screen">
+              {/* Page Content: {children} is where Next.js injects the 
               content of the current route (e.g., Home page.tsx, or Calls page.tsx)
             */}
-            {children}
+              {children}
 
-            {/* NOTE: 404 handling is now managed by Next.js's built-in not-found.tsx file, 
+              {/* NOTE: 404 handling is now managed by Next.js's built-in not-found.tsx file, 
                so the <Route path="*" ...> is no longer needed here.
             */}
-          </main>
-        </div>
+            </main>
+          </div>
+        </Providers>
       </body>
     </html>
   );
