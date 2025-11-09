@@ -1,40 +1,40 @@
 // src/services/call-logs-api.ts
 
-import { API_CONFIG, callingAgentClient } from './api-config'
-
-// Placeholder type for a Call Log
-interface CallLog {
-  id: number
-  customerId: number
-  transcript: string
-  durationSeconds: number
-  callStartTime: string
-  outcome: 'scheduled' | 'interested' | 'not_interested' | 'follow_up' | 'no_answer'
-  notes: string
+export interface CallLogWithCustomer {
+  id: string;
+  transcript: string;
+  duration: number;
+  startTime: string; // Prisma sends dates as ISO strings
+  endTime: string | null;
+  outcome: string | null;
+  notes: string | null;
+  customerId: string | null;
+  // The customer object is now nested!
+  customer: {
+    id: string;
+    phone: string;
+    name: string | null;
+    email: string | null;
+  } | null;
 }
-
-const { endpoints } = API_CONFIG
 
 /**
- * Service class for interacting with the Call Logs API via the Calling Agent.
+ * Fetches all call logs from our local Next.js API (the BFF).
  */
-export class CallLogsApiService {
-  /**
-   * Fetches a list of all call logs.
-   */
-  async getCallLogs(): Promise<CallLog[]> {
-    // Calls external Calling Agent: http://localhost:3001/api/calls
-    return callingAgentClient.get<CallLog[]>(endpoints.calls.list)
-  }
+export async function getCallLogs(): Promise<CallLogWithCustomer[]> {
+  try {
+    // We fetch from the relative path, which is our BFF route
+    const response = await fetch("/api/calls");
 
-  /**
-   * Fetches a specific call log by ID.
-   */
-  async getCallLogDetail(id: number): Promise<CallLog> {
-    // Calls external Calling Agent: http://localhost:3001/api/calls/{id}
-    const endpoint = endpoints.calls.detail(id)
-    return callingAgentClient.get<CallLog>(endpoint)
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error in getCallLogs service:", error);
+    // Re-throw the error so the component can catch it
+    throw error;
   }
 }
 
-export const callLogsApiService = new CallLogsApiService()
