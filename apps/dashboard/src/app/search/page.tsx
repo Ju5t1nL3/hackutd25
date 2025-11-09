@@ -68,7 +68,7 @@ function Search() {
   };
 
   return (
-    <div className="p-4 sm:p-8 space-y-8">
+    <div className="p-4 sm:p-8 space-y-8 text-black">
       <Header title="Investment Property Search" />
 
       {/* Search Form (from snippet logic) */}
