@@ -12,10 +12,10 @@ generator client {
 }
 
 // 3. Define the Python generator (this is for your app)
-generator pyclient {
-  provider = "prisma-client-py"
-  output   = "../../../apps/searching-agent/.venv/lib/python3.13/site-packages/prisma" // Adjust path as needed
-}
+// generator pyclient {
+//   provider = "prisma-client-py"
+//   output   = "../../../apps/searching-agent/.venv/lib/python3.13/site-packages/prisma" // Adjust path as needed
+// }
 
 
 // --- YOUR DATABASE MODELS ---
@@ -34,12 +34,18 @@ model Customer {
 
 // Model for the call logs (from Keshav & Monish's app)
 model CallLog {
-  id         String   @id @default(cuid())
+  id        String   @id @default(cuid())
   transcript String
-  duration   Int // in seconds
-  createdAt  DateTime @default(now())
-
-  // Relation: Each log belongs to one customer
+  duration  Int // in seconds
+  
+  // --- NEW & UPDATED FIELDS ---
+  startTime DateTime @default(now())
+  endTime   DateTime?
+  outcome   String? // "scheduled", "interested", "not_interested"
+  notes     String?
+  
+  // --- THE DATABASE LINK ---
+  // This links the call to a specific customer
   customerId String?
   customer   Customer? @relation(fields: [customerId], references: [id])
 }
