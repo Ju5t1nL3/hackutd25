@@ -232,7 +232,7 @@ def build_graph_json(
                 {
                     "from": "search_criteria",
                     "to": house["id"],
-                    "label": f"{house['score']['matchScore']}/3 match",  # Add a label for the edge
+                    "label": f"{house['score']['matchScore']}/4 match",  # Add a label for the edge
                 }
             )
 
