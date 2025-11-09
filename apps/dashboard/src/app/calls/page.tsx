@@ -2,11 +2,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-// --- FIXED IMPORTS ---
-import Header from "@/components/Header";
-import { getCallLogs, CallLogWithCustomer } from "@/services/call-logs-api";
-import { services, GraphRequest } from "@/services";
-import { GraphResponse, BestMatch, GraphData } from "@/services/graph-api";
+// --- FIXED IMPORTS (reverted to relative paths) ---
+import Header from "../../components/Header";
+import OpportunityGraph from "../../components/OpportunityGraph"; // <-- Import new component
+import { getCallLogs, CallLogWithCustomer } from "../../services/call-logs-api";
+import { services, GraphRequest } from "../../services";
+import { GraphResponse, BestMatch, GraphData } from "../../services/graph-api";
 // ---
 
 // --- Helper function for formatting time ---
@@ -23,30 +24,25 @@ interface CallLogModalProps {
 }
 
 function CallLogModal({ log, onClose }: CallLogModalProps) {
-  // (This component remains unchanged from your file)
+  // (This component is unchanged)
   return (
-    // Backdrop
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-      onClick={onClose} // Close modal on backdrop click
+      onClick={onClose}
     >
-      {/* Modal Content */}
       <div
         className="relative w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()} // Prevent modal click from closing
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex items-start justify-between border-b pb-3">
           <h2 className="text-2xl font-bold text-gray-900">Call Details</h2>
           <button
             onClick={onClose}
             className="text-2xl font-light text-gray-500 hover:text-gray-900 cursor-pointer"
           >
-            &times; {/* Close 'X' icon */}
+            &times;
           </button>
         </div>
-
-        {/* Scrollable Content Area */}
         <div className="mt-4 max-h-[70vh] overflow-y-auto pr-2">
           <dl className="space-y-4">
             {/* Customer Details */}
@@ -117,7 +113,7 @@ function CallLogModal({ log, onClose }: CallLogModalProps) {
   );
 }
 
-// --- NEW Graph Modal Component ---
+// --- UPDATED Graph Modal Component ---
 interface GraphModalProps {
   data: GraphResponse;
   onClose: () => void;
@@ -134,7 +130,7 @@ function GraphModal({ data, onClose }: GraphModalProps) {
     >
       {/* Modal Content */}
       <div
-        className="relative w-full max-w-4xl rounded-lg bg-white p-6 shadow-xl"
+        className="relative w-full max-w-6xl rounded-lg bg-white p-6 shadow-xl" // Made modal wider
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -151,9 +147,10 @@ function GraphModal({ data, onClose }: GraphModalProps) {
         </div>
 
         {/* Scrollable Content Area */}
-        <div className="mt-4 grid max-h-[70vh] grid-cols-1 gap-6 overflow-y-auto pr-2 md:grid-cols-2">
-          {/* Left Side: Best Match */}
-          <div className="space-y-4">
+        {/* Changed grid to 1/3 and 2/3 layout */}
+        <div className="mt-4 grid max-h-[70vh] grid-cols-1 gap-6 overflow-y-auto pr-2 md:grid-cols-3">
+          {/* Left Side: Best Match (1/3 width) */}
+          <div className="space-y-4 md:col-span-1">
             <h3 className="text-lg font-semibold text-gray-900">Best Match</h3>
             {bestMatch ? (
               <div className="rounded-lg border bg-gray-50 p-4">
@@ -173,21 +170,36 @@ function GraphModal({ data, onClose }: GraphModalProps) {
             ) : (
               <p className="text-gray-500">No suitable match found.</p>
             )}
+
+            <h3 className="text-lg font-semibold text-gray-900 mt-4">
+              All Matches
+            </h3>
+            <ul className="list-disc pl-5 text-gray-700">
+              {graphData.nodes
+                .filter((n) => n.type === "property")
+                .map((node) => (
+                  <li
+                    key={node.id}
+                    className={node.isBestMatch ? "font-bold" : ""}
+                  >
+                    {node.label} ({node.score}/4 match)
+                  </li>
+                ))}
+            </ul>
           </div>
 
-          {/* Right Side: Graph Visualization */}
-          <div className="space-y-4">
+          {/* Right Side: Graph Visualization (2/3 width) */}
+          <div className="space-y-4 md:col-span-2">
             <h3 className="text-lg font-semibold text-gray-900">Market Map</h3>
-            <div className="flex h-64 items-center justify-center rounded-lg border border-dashed bg-gray-50 text-gray-500">
-              [Graph Visualization Area]
-              {/* TODO: Add a graph library (e.g., react-flow-renderer or vis.js) 
-                and pass `graphData` to it.
-                For now, we'll just show the raw JSON.
-              */}
-              <pre className="overflow-x-auto text-xs">
-                {JSON.stringify(graphData, null, 2)}
-              </pre>
+
+            {/* --- THIS IS THE KEY CHANGE --- */}
+            {/* Replaced the <pre> tag with the new component.
+              We give it a fixed height so React Flow can render.
+            */}
+            <div className="h-[50vh] w-full rounded-lg border">
+              <OpportunityGraph data={graphData} />
             </div>
+            {/* --- END OF KEY CHANGE --- */}
           </div>
         </div>
       </div>
@@ -197,6 +209,7 @@ function GraphModal({ data, onClose }: GraphModalProps) {
 
 // --- Main Page Component ---
 function CallsPage() {
+  // (This component is unchanged)
   const [callLogs, setCallLogs] = useState<CallLogWithCustomer[]>([]);
   const [selectedCall, setSelectedCall] = useState<CallLogWithCustomer | null>(
     null,
@@ -206,8 +219,7 @@ function CallsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // --- NEW STATE for Graph Modal ---
-  const [isGenerating, setIsGenerating] = useState<string | null>(null); // Use call ID as loading indicator
+  const [isGenerating, setIsGenerating] = useState<string | null>(null);
   const [graphData, setGraphData] = useState<GraphResponse | null>(null);
 
   useEffect(() => {
@@ -227,39 +239,34 @@ function CallsPage() {
     fetchLogs();
   }, []);
 
-  // --- NEW HANDLER for Generate Match button ---
   const handleGenerateMatch = async (log: CallLogWithCustomer) => {
     if (!log.notes) {
       alert("This call log has no notes to analyze.");
       return;
     }
 
-    setIsGenerating(log.id); // Set loading for this specific log
+    setIsGenerating(log.id);
     try {
       const criteria: GraphRequest = {
         callLogNotes: log.notes,
       };
-      // This calls your Python backend!
       const data = await services.graph.generateGraph(criteria);
-      setGraphData(data); // Save data and open the modal
+      setGraphData(data);
     } catch (err) {
       alert(`Error generating graph: ${err}`);
     } finally {
-      setIsGenerating(null); // Stop loading
+      setIsGenerating(null);
     }
   };
 
   const filteredLogs = callLogs.filter((log) => {
     const outcomeMatch =
       filterOutcome === "all" || log.outcome === filterOutcome;
-
     const customerName = log.customer?.name?.toLowerCase() || "";
     const transcript = log.transcript.toLowerCase();
-
     const searchMatch =
       customerName.includes(searchQuery.toLowerCase()) ||
       transcript.includes(searchQuery.toLowerCase());
-
     return outcomeMatch && searchMatch;
   });
 
@@ -267,7 +274,6 @@ function CallsPage() {
     <div className="p-4 sm:p-8 space-y-8 text-gray-900">
       <Header title="Call Logs" />
 
-      {/* Search and Filter UI */}
       <div className="flex space-x-4">
         <input
           type="text"
@@ -292,7 +298,6 @@ function CallsPage() {
             Displaying {filteredLogs.length} of {callLogs.length} call logs.
           </p>
 
-          {/* Render the logs */}
           {filteredLogs.map((log) => (
             <div key={log.id} className="p-4 border rounded-lg shadow-sm">
               <div className="flex justify-between items-start">
@@ -313,7 +318,6 @@ function CallsPage() {
 
               <p className="text-gray-600 truncate mt-2">{log.transcript}</p>
 
-              {/* --- UPDATED BUTTONS --- */}
               <div className="mt-4 flex justify-end space-x-3">
                 <button
                   onClick={() => setSelectedCall(log)}
@@ -334,7 +338,6 @@ function CallsPage() {
         </div>
       )}
 
-      {/* Conditionally render the call log modal */}
       {selectedCall && (
         <CallLogModal
           log={selectedCall}
@@ -342,7 +345,6 @@ function CallsPage() {
         />
       )}
 
-      {/* Conditionally render the NEW graph modal */}
       {graphData && (
         <GraphModal data={graphData} onClose={() => setGraphData(null)} />
       )}
