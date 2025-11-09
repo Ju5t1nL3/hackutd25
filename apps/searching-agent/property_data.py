@@ -1,0 +1,11 @@
+HOUSES = [
+    {"id": "house_a", "address": "123 Main St", "location": "Richardson", "price": 480000, "beds": 3, "baths": 2},
+    {"id": "house_b", "address": "222 Oak Ln", "location": "Plano", "price": 600000, "beds": 4, "baths": 3},
+    {"id": "house_c", "address": "456 Pine Ave", "location": "Richardson", "price": 425000, "beds": 3, "baths": 2, "details": "Renovated kitchen."},
+    {"id": "house_d", "address": "789 Elm Blvd", "location": "Dallas", "price": 700000, "beds": 3, "baths": 3},
+    {"id": "house_e", "address": "101 Maple Dr", "location": "Richardson", "price": 510000, "beds": 4, "baths": 2},
+    {"id": "house_f", "address": "202 Birch Pl", "location": "Richardson", "price": 495000, "beds": 3, "baths": 3},
+    {"id": "house_g", "address": "303 Cedar Rd", "location": "Plano", "price": 550000, "beds": 3, "baths": 2},
+    {"id": "house_h", "address": "404 Spruce Way", "location": "Dallas", "price": 820000, "beds": 5, "baths": 4},
+    {"id": "house_i", "address": "505 Willow Ct", "location": "Richardson", "price": 465000, "beds": 3, "baths": 2}
+]
