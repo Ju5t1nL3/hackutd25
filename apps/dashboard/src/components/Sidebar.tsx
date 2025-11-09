@@ -1,14 +1,14 @@
 // src/components/Sidebar.tsx
 
-import React from 'react'
-import Link from 'next/link' // Assuming you're using react-router-dom for navigation
+import React from "react";
+import Link from "next/link"; // Assuming you're using react-router-dom for navigation
 
 const navItems = [
-  { name: 'Dashboard', path: '/', icon: '🏠' },
-  { name: 'Call Logs', path: '/calls', icon: '📞' },
-  { name: 'Property Search', path: '/search', icon: '🔍' },
-  { name: 'Settings', path: '/settings', icon: '⚙️' },
-]
+  { name: "Dashboard", path: "/", icon: "🏠" },
+  { name: "Call Logs", path: "/calls", icon: "📞" },
+  { name: "Property Search", path: "/search", icon: "🔍" },
+  { name: "Settings", path: "/settings", icon: "⚙️" },
+];
 
 const Sidebar: React.FC = () => {
   return (
@@ -33,7 +33,7 @@ const Sidebar: React.FC = () => {
         Veronica's Dashboard
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Sidebar
+export default Sidebar;

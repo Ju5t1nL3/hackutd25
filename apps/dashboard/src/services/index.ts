@@ -18,4 +18,3 @@ export const services = {
   dashboard: dashboardApiService,
   properties: propertiesApiService,
 };
-

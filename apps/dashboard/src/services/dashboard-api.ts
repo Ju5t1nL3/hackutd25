@@ -1,16 +1,16 @@
 // src/services/dashboard-api.ts
 
-import { API_CONFIG, callingAgentClient } from './api-config'
+import { API_CONFIG, callingAgentClient } from "./api-config";
 
 // Placeholder type for Dashboard Stats
 interface DashboardStats {
-  totalCalls: number
-  totalCustomers: number
-  propertiesSearched: number
-  lastAgentUpdate: string
+  totalCalls: number;
+  totalCustomers: number;
+  propertiesSearched: number;
+  lastAgentUpdate: string;
 }
 
-const { endpoints } = API_CONFIG
+const { endpoints } = API_CONFIG;
 
 /**
  * Service class for interacting with Dashboard Statistics via the Calling Agent.
@@ -21,8 +21,8 @@ export class DashboardApiService {
    */
   async getDashboardStats(): Promise<DashboardStats> {
     // Calls external Calling Agent: http://localhost:3001/api/stats/dashboard
-    return callingAgentClient.get<DashboardStats>(endpoints.stats.dashboard)
+    return callingAgentClient.get<DashboardStats>(endpoints.stats.dashboard);
   }
 }
 
-export const dashboardApiService = new DashboardApiService()
+export const dashboardApiService = new DashboardApiService();

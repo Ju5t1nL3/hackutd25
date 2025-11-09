@@ -1,11 +1,11 @@
 // src/components/Card.tsx
 
-import React from 'react'
+import React from "react";
 
 interface CardProps {
-  title: string
-  value: string
-  description: string
+  title: string;
+  value: string;
+  description: string;
 }
 
 const Card: React.FC<CardProps> = ({ title, value, description }) => {
@@ -15,7 +15,7 @@ const Card: React.FC<CardProps> = ({ title, value, description }) => {
       <p className="mt-1 text-3xl font-bold text-gray-900">{value}</p>
       <p className="mt-2 text-xs text-gray-400">{description}</p>
     </div>
-  )
-}
+  );
+};
 
-export default Card
+export default Card;

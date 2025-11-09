@@ -18,14 +18,14 @@ The platform consists of three main applications:
 
 ### Technology Stack
 
-| Component | Technology |
-|-----------|-----------|
-| **Monorepo Manager** | Turborepo |
-| **Frontend** | Next.js, React, TypeScript, Tailwind CSS |
-| **Calling Service** | Node.js, Express, TypeScript, Retell AI SDK |
-| **Search Service** | Python, FastAPI, NVIDIA Nemotron |
-| **Database** | PostgreSQL |
-| **ORM** | Prisma (shared package) |
+| Component            | Technology                                  |
+| -------------------- | ------------------------------------------- |
+| **Monorepo Manager** | Turborepo                                   |
+| **Frontend**         | Next.js, React, TypeScript, Tailwind CSS    |
+| **Calling Service**  | Node.js, Express, TypeScript, Retell AI SDK |
+| **Search Service**   | Python, FastAPI, NVIDIA Nemotron            |
+| **Database**         | PostgreSQL                                  |
+| **ORM**              | Prisma (shared package)                     |
 
 ---
 
@@ -47,6 +47,7 @@ Before beginning, ensure you have these installed:
 These steps only need to be completed once.
 
 ### Step 1: Clone the Repository
+
 ```bash
 git clone <your-repo-url>
 cd hackutd25
@@ -55,6 +56,7 @@ cd hackutd25
 ### Step 2: Install Node.js Dependencies
 
 This installs all npm packages for every app and package in the monorepo:
+
 ```bash
 npm install
 ```
@@ -62,6 +64,7 @@ npm install
 ### Step 3: Set Up Python Environment
 
 Configure the Python virtual environment for the searching agent:
+
 ```bash
 # Navigate to the search agent directory
 cd apps/searching-agent
@@ -87,11 +90,13 @@ Create `.env` files to store sensitive configuration. **These files are never co
 #### Root `.env` File
 
 Create a `.env` file in the project root for the database connection:
+
 ```bash
 touch .env
 ```
 
 Add your PostgreSQL connection string:
+
 ```env
 # /.env
 DATABASE_URL="postgresql://YOUR_USER:YOUR_PASSWORD@YOUR_HOST:5432/YOUR_DB_NAME"
@@ -108,11 +113,13 @@ Create additional environment files for each service:
 ### Step 5: Initialize the Database
 
 Run Prisma migrations to create all database tables:
+
 ```bash
 npx prisma migrate dev --schema=./packages/db/prisma/schema.prisma
 ```
 
 This command will:
+
 1. Read the schema from `packages/db/prisma/schema.prisma`
 2. Connect to your PostgreSQL database
 3. Create all tables (Customer, CallLog, Property, etc.)
@@ -126,18 +133,21 @@ You'll need **two separate terminal windows** running simultaneously.
 ### Terminal 1: Node.js Services
 
 Start all Node.js applications in development mode:
+
 ```bash
 # From project root
 npm run dev
 ```
 
 This starts:
+
 - **Dashboard** at `http://localhost:3000`
 - **Calling Agent** at `http://localhost:3001` (or your configured port)
 
 ### Terminal 2: Python Search Service
 
 Start the FastAPI search service:
+
 ```bash
 # Navigate to the search agent
 cd apps/searching-agent
@@ -162,6 +172,7 @@ The search service runs at `http://localhost:8000` (default FastAPI port)
 **Tech Stack:** Next.js, React, Tailwind CSS
 
 **Responsibilities:**
+
 - Build the user-facing dashboard interface
 - Create reusable UI components in `packages/ui`
 - Implement API routes in `apps/dashboard/src/app/api`
@@ -175,6 +186,7 @@ The search service runs at `http://localhost:8000` (default FastAPI port)
 **Tech Stack:** Node.js, Express, Retell AI SDK
 
 **Responsibilities:**
+
 - Create webhook endpoints for Retell AI integration
 - Handle live call logic and conversation flow
 - Save call logs and transcripts to the database
@@ -189,6 +201,7 @@ The search service runs at `http://localhost:8000` (default FastAPI port)
 **Tech Stack:** Python, FastAPI
 
 **Responsibilities:**
+
 - Create API endpoints (e.g., `/start-search`)
 - Integrate with NVIDIA Nemotron for AI-powered search
 - Connect to Zillow API for property data

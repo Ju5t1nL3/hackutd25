@@ -1,17 +1,17 @@
 // src/services/customers-api.ts
 
-import { API_CONFIG, callingAgentClient } from './api-config'
+import { API_CONFIG, callingAgentClient } from "./api-config";
 
 // Placeholder type for a Customer
 interface Customer {
-  id: number
-  name: string
-  email: string
-  houseWanted: string | null
-  lastCallTime: string
+  id: number;
+  name: string;
+  email: string;
+  houseWanted: string | null;
+  lastCallTime: string;
 }
 
-const { endpoints } = API_CONFIG
+const { endpoints } = API_CONFIG;
 
 /**
  * Service class for interacting with the Customers API via the Calling Agent.
@@ -22,7 +22,7 @@ export class CustomersApiService {
    */
   async getCustomers(): Promise<Customer[]> {
     // Calls external Calling Agent: http://localhost:3001/api/customers
-    return callingAgentClient.get<Customer[]>(endpoints.customers.list)
+    return callingAgentClient.get<Customer[]>(endpoints.customers.list);
   }
 
   /**
@@ -30,9 +30,9 @@ export class CustomersApiService {
    */
   async getCustomerDetail(id: number): Promise<Customer> {
     // Calls external Calling Agent: http://localhost:3001/api/customers/{id}
-    const endpoint = endpoints.customers.detail(id)
-    return callingAgentClient.get<Customer>(endpoint)
+    const endpoint = endpoints.customers.detail(id);
+    return callingAgentClient.get<Customer>(endpoint);
   }
 }
 
-export const customersApiService = new CustomersApiService()
+export const customersApiService = new CustomersApiService();
