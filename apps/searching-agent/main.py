@@ -1,9 +1,23 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 # Use a relative import to get the services.py file
 from . import schemas, services
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:3000", # The origin of your Next.js dashboard
+    "http://localhost:3001", # In case it's on 3001
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins, # List of origins that are allowed
+    allow_credentials=True,
+    allow_methods=["*"], # Allow all methods (GET, POST, etc.)
+    allow_headers=["*"], # Allow all headers
+)
 
 # --- API Endpoints ---
 @app.post("/generate-graph")
