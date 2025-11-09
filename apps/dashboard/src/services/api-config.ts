@@ -3,8 +3,8 @@
 
 export const API_CONFIG = {
     // Backend service URLs
-    CALLING_AGENT_URL: import.meta.env.VITE_CALLING_AGENT_URL || 'http://localhost:3001',
-    SEARCHING_AGENT_URL: import.meta.env.VITE_SEARCHING_AGENT_URL || 'http://localhost:8000',
+    CALLING_AGENT_URL: process.env.VITE_CALLING_AGENT_URL || 'http://localhost:3001',
+    SEARCHING_AGENT_URL: process.env.VITE_SEARCHING_AGENT_URL || 'http://localhost:8000',
     
     // API endpoints
     endpoints: {
