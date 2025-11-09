@@ -1,14 +1,17 @@
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import BackgroundTasks, FastAPI
+
 # Use a relative import to get the services.py file
-from . import services
-from . import schemas 
+from . import schemas, services
 
 app = FastAPI()
 
 # --- API Endpoints ---
 
+
 @app.post("/start-search")
-async def start_search_endpoint(request: schemas.SearchRequest, background_tasks: BackgroundTasks):
+async def start_search_endpoint(
+    request: schemas.SearchRequest, background_tasks: BackgroundTasks
+):
     """
     (This is your original route)
     Receives a search request from the dashboard,
@@ -18,11 +21,9 @@ async def start_search_endpoint(request: schemas.SearchRequest, background_tasks
 
     # Pass the work to the service layer
     background_tasks.add_task(
-        services.run_property_search, 
-        request.query, 
-        request.location
+        services.run_property_search, request.query, request.location
     )
-    
+
     return {"status": "success", "message": "Search has started in the background."}
 
 
@@ -60,7 +61,7 @@ async def generate_graph_endpoint(request: schemas.GraphRequest):
       }
     """
     print(f"--- 🌐 MAIN: Received graph request: {request.model_dump_json()} ---")
-    
+
     # This is NOT a background task. The user is waiting.
     # We await the result and return it directly.
     return await services.generate_opportunity_graph(request)
